@@ -25,12 +25,12 @@ aloca:
 	movl $0, %ebx
 
 	incl %eax #incrementa em 1 o valor da break, para pegar o primeiro endere�o v�lido
-	movl %eax, break_atual
+	movl %eax, curr_break
 	movl %eax, heap_begin
 
 end_if:
 	movl heap_begin, %eax #Carrega as vari�veis globais
-	movl break_atual, %ebx #tamanho a ser alocado em registradores
+	movl curr_break, %ebx #tamanho a ser alocado em registradores
 	movl 8(%ebp), %ecx #tamanho do malloc
 
 procura_espaco:
@@ -79,7 +79,7 @@ aumenta_break:
 	movl %ecx, bit_size(%eax)
 
 	addl $sz_header, %eax  # *esconder tam do cabe�alho para imprimir somente o alocado
-	movl %ebx, break_atual # Novo valor break
+	movl %ebx, curr_break # Novo valor break
 	popl %ebp
 	ret
 
@@ -152,7 +152,7 @@ imprMapa:
 
 loop_seg:
 
-	cmpl break_atual, %eax
+	cmpl curr_break, %eax
 	je fim_loop
 
 if_ocupado:
@@ -230,7 +230,7 @@ LibMem:
 	addl %ecx, %ebx
 	addl $sz_header, %ebx
 
-	cmpl break_atual, %ebx
+	cmpl curr_break, %ebx
 	jge parte_1
 
 	cmpl $true, bit_disp(%ebx)
@@ -267,7 +267,7 @@ parte_2:
 	addl $sz_header, %ebx
 	addl tesstegd(%eax), %ebx
 
-	cmpl break_atual, %ebx
+	cmpl curr_break, %ebx
 	jl fim
 
 diminui_break:
@@ -275,7 +275,7 @@ diminui_break:
 	movl %eax, %ebx
 	movl $break, %eax
 	int $60
-	movl %eax, break_atual
+	movl %eax, curr_break
 
 fim:
 	ret
@@ -297,7 +297,7 @@ imprMapa2:
     movl $0, -8(%ebp)
 
 verifica_se_imprime:
-    cmpl break_atual, %eax # se for igual, cai fora do imprime
+    cmpl curr_break, %eax # se for igual, cai fora do imprime
     je fim_mapa
 
 recarreca_cabecalho_em_ecx:
