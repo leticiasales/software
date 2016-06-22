@@ -16,102 +16,102 @@
 .global aloca
 .type aloca,@function
 aloca:
-	pushl %rbp
-	movl %rsp, %rbp
+	pushl %ebp
+	movl %esp, %ebp
 
 	cmpl $0,heap_begin
 	jne end_if
-	movl $break, %rax
-	movl $0, %rbx
+	movl $break, %eax
+	movl $0, %ebx
 
-	incl %rax #incrementa em 1 o valor da break, para pegar o primeiro endere�o v�lido
-	movl %rax, break_atual
-	movl %rax, heap_begin
+	incl %eax #incrementa em 1 o valor da break, para pegar o primeiro endere�o v�lido
+	movl %eax, break_atual
+	movl %eax, heap_begin
 
 end_if:
-	movl heap_begin, %rax #Carrega as vari�veis globais
-	movl break_atual, %rbx #tamanho a ser alocado em registradores
-	movl 8(%rbp), %rcx #tamanho do malloc
+	movl heap_begin, %eax #Carrega as vari�veis globais
+	movl break_atual, %ebx #tamanho a ser alocado em registradores
+	movl 8(%ebp), %ecx #tamanho do malloc
 
-procura_rspaco:
-	cmpl %rbx, %rax # Se o endere�o de mem�ria analisado for igual a break
+procura_espaco:
+	cmpl %ebx, %eax # Se o endere�o de mem�ria analisado for igual a break
 	je aumenta_break #igual a break, aumentamos a break
 
-	movl tesstegd(%rax), %rdx #rdx recebe o tamanho do segmento atual
-	cmpl $false, bit_disp(%rax) # Se o segmento estiver ocupado
+	movl tesstegd(%eax), %edx #edx recebe o tamanho do segmento atual
+	cmpl $false, bit_disp(%eax) # Se o segmento estiver ocupado
 	je prox_segmento # desvia para o proximo segmento
 
-	cmpl %rdx, %rcx # Se o segmento � do mesmo tamanho que precisamos alocar
+	cmpl %edx, %ecx # Se o segmento � do mesmo tamanho que precisamos alocar
 	je aloca_igual
 
-	cmpl %rdx, %rcx # Se o segmento � maior que o que queremos alocar
+	cmpl %edx, %ecx # Se o segmento � maior que o que queremos alocar
 	jl aloca_menor
 
 prox_segmento:
-	movl tesstegd(%rax), %rdx
-	movl %rdx, bit_sizeerior
+	movl tesstegd(%eax), %edx
+	movl %edx, bit_sizeerior
 
-	addl tesstegd(%rax), %rax #Somamos o tamanho do segmento mais o cabe�alho
-	addl $sz_header, %rax # Para chegar ao pr�ximo segmento
-	jmp procura_rspaco
+	addl tesstegd(%eax), %eax #Somamos o tamanho do segmento mais o cabe�alho
+	addl $sz_header, %eax # Para chegar ao pr�ximo segmento
+	jmp procura_espaco
 
 aumenta_break:
-	addl %rcx, %rbx # Soma em rbx o tamanho a ser alocado
-	addl $sz_header, %rbx # e o tamanho do cabecalho
+	addl %ecx, %ebx # Soma em ebx o tamanho a ser alocado
+	addl $sz_header, %ebx # e o tamanho do cabecalho
 
-	pushl %rax
-	pushl %rbx
-	pushl %rcx
+	pushl %eax
+	pushl %ebx
+	pushl %ecx
 
-	movl $break, %rax
+	movl $break, %eax
 
-	cmpl $0, %rax # Vericia se foi possivel aumentar a break
+	cmpl $0, %eax # Vericia se foi possivel aumentar a break
 	je erro
 
-	popl %rcx # tamanho do malloc
-	popl %rbx # tamanho malloc + cabe�alho
-	popl %rax # inicio heap
+	popl %ecx # tamanho do malloc
+	popl %ebx # tamanho malloc + cabe�alho
+	popl %eax # inicio heap
 
-	movl $false, bit_disp(%rax) # Define o status como indisponivel
-	movl %rcx, tesstegd(%rax) # e informa o tamanho do segmento
+	movl $false, bit_disp(%eax) # Define o status como indisponivel
+	movl %ecx, tesstegd(%eax) # e informa o tamanho do segmento
 
-	movl bit_sizeerior, %rcx
-	movl %rcx, bit_size(%rax)
+	movl bit_sizeerior, %ecx
+	movl %ecx, bit_size(%eax)
 
-	addl $sz_header, %rax  # *esconder tam do cabe�alho para imprimir somente o alocado
-	movl %rbx, break_atual # Novo valor break
-	popl %rbp
+	addl $sz_header, %eax  # *esconder tam do cabe�alho para imprimir somente o alocado
+	movl %ebx, break_atual # Novo valor break
+	popl %ebp
 	ret
 
 aloca_igual:
 
-	movl $false, bit_disp(%rax) # Se o segmento tem o mesmo tamanho do que
-	addl $sz_header, %rax # queremos alocar, definimos o status como
-	popl %rbp # indisponivel
+	movl $false, bit_disp(%eax) # Se o segmento tem o mesmo tamanho do que
+	addl $sz_header, %eax # queremos alocar, definimos o status como
+	popl %ebp # indisponivel
 	ret
 
 aloca_menor:
 
-	subl $sz_header, %rdx # Verifica se o segmento tem pelo menos o
-	cmpl %rcx, %rdx # tamanho que queremos alocar somado em *
-	jle prox_segmento # (8 do cabecalho e 1 do rspaco novo), que � o minimo necessario para outro segmento
-	movl $false, bit_disp(%rax)
-	movl %rcx, tesstegd(%rax)
+	subl $sz_header, %edx # Verifica se o segmento tem pelo menos o
+	cmpl %ecx, %edx # tamanho que queremos alocar somado em *
+	jle prox_segmento # (8 do cabecalho e 1 do espaco novo), que � o minimo necessario para outro segmento
+	movl $false, bit_disp(%eax)
+	movl %ecx, tesstegd(%eax)
 
-	addl %rcx, %rax # Segue para o peda�o livre que sobrou do segmento
-	addl $sz_header, %rax
+	addl %ecx, %eax # Segue para o peda�o livre que sobrou do segmento
+	addl $sz_header, %eax
 
-	subl %rcx, %rdx
-	movl %rdx, tesstegd(%rax) # Define o tamanho que restou do segmento
-	movl $true, bit_disp(%rax) # e o status como disponivel
+	subl %ecx, %edx
+	movl %edx, tesstegd(%eax) # Define o tamanho que restou do segmento
+	movl $true, bit_disp(%eax) # e o status como disponivel
 
-	subl %rcx, %rax # Volta para o segmento anterior
-	popl %rbp # na primeira posicao apos o cabecalho
+	subl %ecx, %eax # Volta para o segmento anterior
+	popl %ebp # na primeira posicao apos o cabecalho
 	ret
 
 erro:
-	movl $0, %rax # Retorna zero para informar o erro
-	popl %rbp
+	movl $0, %eax # Retorna zero para informar o erro
+	popl %ebp
 	ret
 
 
@@ -132,87 +132,87 @@ erro:
 	.equ inc, -24
 
 imprMapa:
-	pushl %rbp
-	movl %rsp, %rbp
+	pushl %ebp
+	movl %esp, %ebp
 
-	subl $24, %rsp # Aumenta a pilha para alocar as variaveis locais
+	subl $24, %esp # Aumenta a pilha para alocar as variaveis locais
 
-	movl $0, am_busy(%rbp)
-	movl $0, am_free(%rbp)
-	movl $0, am_p_busy(%rbp)
-	movl $0, am_p_free(%rbp)
-	movl $1, inc(%rbp)
+	movl $0, am_busy(%ebp)
+	movl $0, am_free(%ebp)
+	movl $0, am_p_busy(%ebp)
+	movl $0, am_p_free(%ebp)
+	movl $1, inc(%ebp)
 
 	pushl heap_begin # Parametros para impressao do endere�o do inicio da heap
 	pushl $msg1 # e a mensagem
 	call printf
-	addl $8, %rsp # Restaura a pilha
+	addl $8, %esp # Restaura a pilha
 
-	movl heap_begin, %rax
+	movl heap_begin, %eax
 
 loop_seg:
 
-	cmpl break_atual, %rax
+	cmpl break_atual, %eax
 	je fim_loop
 
 if_ocupado:
 
-	cmpl $false, bit_disp(%rax) # Verifica se o segmento esta ocupado
+	cmpl $false, bit_disp(%eax) # Verifica se o segmento esta ocupado
 	jne else_livre # Se estiver livre vai para o else_livre
-	addl $1, am_busy(%rbp) # incrementa am_busy
-	movl tesstegd(%rax), %rbx
-	addl %rbx, am_p_busy(%rbp) # Soma o tamanho do segmento atual em am_p_busy
+	addl $1, am_busy(%ebp) # incrementa am_busy
+	movl tesstegd(%eax), %ebx
+	addl %ebx, am_p_busy(%ebp) # Soma o tamanho do segmento atual em am_p_busy
 
-	pushl %rax
+	pushl %eax
 
-	pushl tesstegd(%rax) # empilha para o printf
-	pushl inc(%rbp)
+	pushl tesstegd(%eax) # empilha para o printf
+	pushl inc(%ebp)
 	pushl $msg2
 	call printf
-	addl $12, %rsp # Restaura a pilha
+	addl $12, %esp # Restaura a pilha
 
-	popl %rax # Contem o endere�o do segmento
+	popl %eax # Contem o endere�o do segmento
 
 	jmp proximo_seg
 
 else_livre:
 
-	addl $1, am_free(%rbp) # incrementa am_free
-	movl tesstegd(%rax), %rbx
-	addl %rbx, am_p_free(%rbp) # Soma o tamanho do segmento atual
+	addl $1, am_free(%ebp) # incrementa am_free
+	movl tesstegd(%eax), %ebx
+	addl %ebx, am_p_free(%ebp) # Soma o tamanho do segmento atual
 
-	pushl %rax
+	pushl %eax
 
-	pushl tesstegd(%rax) # Empilha para o printf
-	pushl inc(%rbp)
+	pushl tesstegd(%eax) # Empilha para o printf
+	pushl inc(%ebp)
 	pushl $msg3
 	call printf
-	addl $12, %rsp # Restaura a pilha
+	addl $12, %esp # Restaura a pilha
 
-	popl %rax
+	popl %eax
 
 proximo_seg:
-	addl $1, inc(%rbp) # incrementa inc
-	addl tesstegd(%rax), %rax # Soma o tamanho do segmento e cabecalho
-	addl $sz_header, %rax # para ir para o proximo segmento
+	addl $1, inc(%ebp) # incrementa inc
+	addl tesstegd(%eax), %eax # Soma o tamanho do segmento e cabecalho
+	addl $sz_header, %eax # para ir para o proximo segmento
 
 	jmp loop_seg
 
 fim_loop:
-	pushl am_p_busy(%rbp) # Empilha para o printf
-	pushl am_busy(%rbp)
+	pushl am_p_busy(%ebp) # Empilha para o printf
+	pushl am_busy(%ebp)
 	pushl $msg4
 	call printf
-	addl $12, %rsp # Restaura pilha
+	addl $12, %esp # Restaura pilha
 
-	pushl am_p_free(%rbp)
-	pushl am_free(%rbp)
+	pushl am_p_free(%ebp)
+	pushl am_free(%ebp)
 	pushl $msg5
 	call printf
-	addl $12, %rsp
+	addl $12, %esp
 
-	addl $24, %rsp
-	popl %rbp
+	addl $24, %esp
+	popl %ebp
 	ret
 
 #LibMem
@@ -221,61 +221,61 @@ fim_loop:
 
 .equ LIBERA, 4
 LibMem:
-	movl LIBERA(%rsp), %rax # Acessa parametro
-	subl $sz_header, %rax # posiciona rax no inicio do segmento
-	movl $true, bit_disp(%rax) # e coloca esse segmento como disponivel
-	movl tesstegd(%rax), %rcx
+	movl LIBERA(%esp), %eax # Acessa parametro
+	subl $sz_header, %eax # posiciona eax no inicio do segmento
+	movl $true, bit_disp(%eax) # e coloca esse segmento como disponivel
+	movl tesstegd(%eax), %ecx
 
-	movl %rax, %rbx
-	addl %rcx, %rbx
-	addl $sz_header, %rbx
+	movl %eax, %ebx
+	addl %ecx, %ebx
+	addl $sz_header, %ebx
 
-	cmpl break_atual, %rbx
+	cmpl break_atual, %ebx
 	jge parte_1
 
-	cmpl $true, bit_disp(%rbx)
+	cmpl $true, bit_disp(%ebx)
 	jne parte_1
 
-	movl tesstegd(%rax), %rcx # rcx tera o tam do segmento atual
-	movl tesstegd(%rbx), %rdx # rdx tera o tam do segmento de rbx
-	addl $sz_header, %rdx
-	addl %rcx, %rdx
-	movl %rdx, tesstegd(%rax)
+	movl tesstegd(%eax), %ecx # ecx tera o tam do segmento atual
+	movl tesstegd(%ebx), %edx # edx tera o tam do segmento de ebx
+	addl $sz_header, %edx
+	addl %ecx, %edx
+	movl %edx, tesstegd(%eax)
 
 parte_1:
 
-	movl %rax, %rbx
-	cmpl $0, bit_size(%rax)
+	movl %eax, %ebx
+	cmpl $0, bit_size(%eax)
 	je parte_2
 
-	subl bit_size(%rax), %rbx
-	subl $sz_header, %rbx
+	subl bit_size(%eax), %ebx
+	subl $sz_header, %ebx
 
-	cmpl $true, bit_disp(%rbx)
+	cmpl $true, bit_disp(%ebx)
 	jne parte_2
 
-	movl tesstegd(%rax), %rcx
-	movl bit_size(%rax), %rdx
-	addl $sz_header, %rdx
-	addl %rcx, %rdx
-	movl %rdx, tesstegd(%rbx)
-	movl %rbx, %rax
+	movl tesstegd(%eax), %ecx
+	movl bit_size(%eax), %edx
+	addl $sz_header, %edx
+	addl %ecx, %edx
+	movl %edx, tesstegd(%ebx)
+	movl %ebx, %eax
 
 parte_2:
 
-	movl %rax, %rbx
-	addl $sz_header, %rbx
-	addl tesstegd(%rax), %rbx
+	movl %eax, %ebx
+	addl $sz_header, %ebx
+	addl tesstegd(%eax), %ebx
 
-	cmpl break_atual, %rbx
+	cmpl break_atual, %ebx
 	jl fim
 
 diminui_break:
 
-	movl %rax, %rbx
-	movl $break, %rax
+	movl %eax, %ebx
+	movl $break, %eax
 	int $60
-	movl %rax, break_atual
+	movl %eax, break_atual
 
 fim:
 	ret
@@ -290,92 +290,92 @@ fim:
   msg_5: .string "-"
 
 imprMapa2:
-    pushl %rbp
-    movl %rsp, %rbp
-    subl $8, %rsp
-    movl heap_begin, %rax
-    movl $0, -8(%rbp)
+    pushl %ebp
+    movl %esp, %ebp
+    subl $8, %esp
+    movl heap_begin, %eax
+    movl $0, -8(%ebp)
 
 verifica_se_imprime:
-    cmpl break_atual, %rax # se for igual, cai fora do imprime
+    cmpl break_atual, %eax # se for igual, cai fora do imprime
     je fim_mapa
 
-recarreca_cabecalho_em_rcx:
-    addl $1, -8(%rbp)
-    movl -8(%rbp), %rcx #iremos imprimir o segmento que estamos
-    pushl %rax
-    pushl %rcx
+recarreca_cabecalho_em_ecx:
+    addl $1, -8(%ebp)
+    movl -8(%ebp), %ecx #iremos imprimir o segmento que estamos
+    pushl %eax
+    pushl %ecx
     pushl $msg_1
     call printf
-    addl $8, %rsp
-    popl %rax
-    movl $12, -4(%rbp)
-    movl -4(%rbp), %rcx
+    addl $8, %esp
+    popl %eax
+    movl $12, -4(%ebp)
+    movl -4(%ebp), %ecx
 
 loop_cabecalho:
-    pushl %rax
+    pushl %eax
     pushl $msg_2
     call printf
-    addl $4, %rsp
-    popl %rax
-    subl $1, -4(%rbp)
-    movl -4(%rbp), %rcx
-    cmpl $0, %rcx
+    addl $4, %esp
+    popl %eax
+    subl $1, -4(%ebp)
+    movl -4(%ebp), %ecx
+    cmpl $0, %ecx
     je continua
     jmp loop_cabecalho
 
 continua:
-    pushl %rax
+    pushl %eax
     pushl $msg_3
     call printf
-    addl $4, %rsp
-    popl %rax
-    cmpl $true, bit_disp(%rax)
+    addl $4, %esp
+    popl %eax
+    cmpl $true, bit_disp(%eax)
     jne indisponivel
-    movl tesstegd(%rax), %rdx
-    movl %rdx, -4(%rbp)
-    mov -4(%rbp), %rcx
+    movl tesstegd(%eax), %edx
+    movl %edx, -4(%ebp)
+    mov -4(%ebp), %ecx
 
 loop_disponivel:
-    pushl %rax
+    pushl %eax
     pushl $msg_5
     call printf
-    addl $4, %rsp
-    popl %rax
-    subl $1, -4(%rbp)
-    movl -4(%rbp), %rcx
-    cmpl $0, %rcx
+    addl $4, %esp
+    popl %eax
+    subl $1, -4(%ebp)
+    movl -4(%ebp), %ecx
+    cmpl $0, %ecx
     je proximo_segmento
     jmp loop_disponivel
 
 indisponivel:
-    movl tesstegd(%rax), %rdx
-    movl %rdx,-4(%rbp)
-    movl -4(%rbp), %rcx
+    movl tesstegd(%eax), %edx
+    movl %edx,-4(%ebp)
+    movl -4(%ebp), %ecx
 
 loop_indisponivel:
-    pushl %rax
+    pushl %eax
     pushl $msg_4
     call printf
-    addl $4, %rsp
-    popl %rax
-    subl $1, -4(%rbp)
-    movl -4(%rbp), %rcx
-    cmpl $0, %rcx
+    addl $4, %esp
+    popl %eax
+    subl $1, -4(%ebp)
+    movl -4(%ebp), %ecx
+    cmpl $0, %ecx
     je proximo_segmento
     jmp loop_indisponivel
 
 proximo_segmento:
-    pushl %rax
+    pushl %eax
     pushl $msg_3
     call printf
-    addl $4, %rsp
-    popl %rax
-    addl tesstegd(%rax), %rax # Soma o tamanho do segmento e cabecalho
-    addl $sz_header, %rax # para ir para o proximo segmento
+    addl $4, %esp
+    popl %eax
+    addl tesstegd(%eax), %eax # Soma o tamanho do segmento e cabecalho
+    addl $sz_header, %eax # para ir para o proximo segmento
     jmp verifica_se_imprime
 
 fim_mapa:
-    addl $8, %rsp
-    popl %rbp
+    addl $8, %esp
+    popl %ebp
     ret
