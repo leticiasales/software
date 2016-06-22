@@ -1,9 +1,10 @@
 #include <stdio.h>
-extern void allocate_init(void);
+extern void aloca(void);
+/*
 extern long int allocate(long int);
 extern void deallocate(void* ptr);
 extern void print(void);
-
+*/
 long int heap_begin;
 long int current_break;
 long int inicio;
