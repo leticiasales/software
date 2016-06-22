@@ -1,66 +1,66 @@
 .section .data
-	#Variáveis globais
+	#Variï¿½veis globais
 	inicio_heap: .long 0
 	tam_anterior: .long 0
 	brk_atual: .long 0
 
 	#Constantes
-	.equ HDR_TAM, 12 # Tamanho do cabeçalho, para alocar uma posicao a mais  a do tam anterior, e somar com tam
+	.equ HDR_TAM, 12 # Tamanho do cabeï¿½alho, para meuAlocaMemr uma posicao a mais  a do tam anterior, e somar com tam
 	.equ BRK, 45
 	.equ LINUX_SYSCALL, 0x80
 	.equ DISP, 1
 	.equ INDISP, 0
-	.equ POS_AVAL, 0 # Posicao de DISP ou INDISP no cabeçalho
-	.equ POS_TAM, 4 # Posicao do tamanho no cabeçalho
+	.equ POS_AVAL, 0 # Posicao de DISP ou INDISP no cabeï¿½alho
+	.equ POS_TAM, 4 # Posicao do tamanho no cabeï¿½alho
 	.equ TAM_ANT, 8
 
 .section .text
 
-.global aloca
-.type aloca,@function
-aloca:
+.global meuAlocaMem
+.type meuAlocaMem,@function
+meuAlocaMem:
 	pushl %ebp
 	movl %esp, %ebp
 
 	cmpl $0,inicio_heap
-	jne end_if #Irá verificar o tamanho da heap
+	jne end_if #Irï¿½ verificar o tamanho da heap
 	movl $BRK, %eax
 	movl $0, %ebx
 	int $LINUX_SYSCALL
 
-	incl %eax #incrementa em 1 o valor da brk, para pegar o primeiro endereço válido
+	incl %eax #incrementa em 1 o valor da brk, para pegar o primeiro endereï¿½o vï¿½lido
 	movl %eax, brk_atual
 	movl %eax, inicio_heap
 
 end_if:
-	movl inicio_heap, %eax #Carrega as variáveis globais
-	movl brk_atual, %ebx #tamanho a ser alocado em registradores
+	movl inicio_heap, %eax #Carrega as variï¿½veis globais
+	movl brk_atual, %ebx #tamanho a ser meuAlocaMemdo em registradores
 	movl 8(%ebp), %ecx #tamanho do malloc
 
 procura_espaco:
-	cmpl %ebx, %eax # Se o endereço de memória analisado for igual a brk
+	cmpl %ebx, %eax # Se o endereï¿½o de memï¿½ria analisado for igual a brk
 	je aumenta_brk #igual a brk, aumentamos a brk
 
 	movl POS_TAM(%eax), %edx #edx recebe o tamanho do segmento atual
 	cmpl $INDISP, POS_AVAL(%eax) # Se o segmento estiver ocupado
 	je prox_segmento # desvia para o proximo segmento
 
-	cmpl %edx, %ecx # Se o segmento é do mesmo tamanho que precisamos alocar
-	je aloca_igual
+	cmpl %edx, %ecx # Se o segmento ï¿½ do mesmo tamanho que precisamos meuAlocaMemr
+	je meuAlocaMem_igual
 
-	cmpl %edx, %ecx # Se o segmento é maior que o que queremos alocar
-	jl aloca_menor
+	cmpl %edx, %ecx # Se o segmento ï¿½ maior que o que queremos meuAlocaMemr
+	jl meuAlocaMem_menor
 
 prox_segmento:
 	movl POS_TAM(%eax), %edx
 	movl %edx, tam_anterior
 
-	addl POS_TAM(%eax), %eax #Somamos o tamanho do segmento mais o cabeçalho
-	addl $HDR_TAM, %eax # Para chegar ao próximo segmento
+	addl POS_TAM(%eax), %eax #Somamos o tamanho do segmento mais o cabeï¿½alho
+	addl $HDR_TAM, %eax # Para chegar ao prï¿½ximo segmento
 	jmp procura_espaco
 
 aumenta_brk:
-	addl %ecx, %ebx # Soma em ebx o tamanho a ser alocado
+	addl %ecx, %ebx # Soma em ebx o tamanho a ser meuAlocaMemdo
 	addl $HDR_TAM, %ebx # e o tamanho do cabecalho
 
 	pushl %eax
@@ -74,7 +74,7 @@ aumenta_brk:
 	je erro
 
 	popl %ecx # tamanho do malloc
-	popl %ebx # tamanho malloc + cabeçalho
+	popl %ebx # tamanho malloc + cabeï¿½alho
 	popl %eax # inicio heap
 
 	movl $INDISP, POS_AVAL(%eax) # Define o status como indisponivel
@@ -83,27 +83,27 @@ aumenta_brk:
 	movl tam_anterior, %ecx
 	movl %ecx, TAM_ANT(%eax)
 
-	addl $HDR_TAM, %eax  # *esconder tam do cabeçalho para imprimir somente o alocado
+	addl $HDR_TAM, %eax  # *esconder tam do cabeï¿½alho para imprimir somente o meuAlocaMemdo
 	movl %ebx, brk_atual # Novo valor BRK
 	popl %ebp
 	ret
 
-aloca_igual:
+meuAlocaMem_igual:
 
 	movl $INDISP, POS_AVAL(%eax) # Se o segmento tem o mesmo tamanho do que
-	addl $HDR_TAM, %eax # queremos alocar, definimos o status como
+	addl $HDR_TAM, %eax # queremos meuAlocaMemr, definimos o status como
 	popl %ebp # indisponivel
 	ret
 
-aloca_menor:
+meuAlocaMem_menor:
 
 	subl $HDR_TAM, %edx # Verifica se o segmento tem pelo menos o
-	cmpl %ecx, %edx # tamanho que queremos alocar somado em *
-	jle prox_segmento # (8 do cabecalho e 1 do espaco novo), que é o minimo necessario para outro segmento
+	cmpl %ecx, %edx # tamanho que queremos meuAlocaMemr somado em *
+	jle prox_segmento # (8 do cabecalho e 1 do espaco novo), que ï¿½ o minimo necessario para outro segmento
 	movl $INDISP, POS_AVAL(%eax)
 	movl %ecx, POS_TAM(%eax)
 
-	addl %ecx, %eax # Segue para o pedaço livre que sobrou do segmento
+	addl %ecx, %eax # Segue para o pedaï¿½o livre que sobrou do segmento
 	addl $HDR_TAM, %eax
 
 	subl %ecx, %edx
@@ -131,17 +131,17 @@ erro:
 	msg5: .string "Segmentos Livres: %d / %d bytes\n\n"
 
 	.equ HEAP_ATUAL, -4
-	.equ TOTAL_OCUPADOS, -8 # guarda quantos segmentos são ocupados
-	.equ TOTAL_LIVRES, -12 # Guarda quantos segmentos são livres
+	.equ TOTAL_OCUPADOS, -8 # guarda quantos segmentos sï¿½o ocupados
+	.equ TOTAL_LIVRES, -12 # Guarda quantos segmentos sï¿½o livres
 	.equ TOTAL_SEG_OCUPADOS, -16
 	.equ TOTAL_SEG_LIVRES, -20
-	.equ INC, -24 # Número segmento atual
+	.equ INC, -24 # Nï¿½mero segmento atual
 
 imprMapa:
 	pushl %ebp
 	movl %esp, %ebp
 
-	subl $24, %esp # Aumenta a pilha para alocar as variaveis locais
+	subl $24, %esp # Aumenta a pilha para meuAlocaMemr as variaveis locais
 
 	movl $0, TOTAL_OCUPADOS(%ebp)
 	movl $0, TOTAL_LIVRES(%ebp)
@@ -149,7 +149,7 @@ imprMapa:
 	movl $0, TOTAL_SEG_LIVRES(%ebp)
 	movl $1, INC(%ebp)
 
-	pushl inicio_heap # Parametros para impressao do endereço do inicio da heap
+	pushl inicio_heap # Parametros para impressao do endereï¿½o do inicio da heap
 	pushl $msg1 # e a mensagem
 	call printf
 	addl $8, %esp # Restaura a pilha
@@ -177,7 +177,7 @@ if_ocupado:
 	call printf
 	addl $12, %esp # Restaura a pilha
 
-	popl %eax # Contem o endereço do segmento
+	popl %eax # Contem o endereï¿½o do segmento
 
 	jmp proximo_seg
 
@@ -221,12 +221,11 @@ fim_loop:
 	popl %ebp
 	ret
 
-#LibMem
-.globl LibMem
-.type LibMem, @function
+.globl meuLiberaMem
+.type meuLiberaMem, @function
 
 .equ LIBERA, 4
-LibMem:
+meuLiberaMem:
 	movl LIBERA(%esp), %eax # Acessa parametro
 	subl $HDR_TAM, %eax # posiciona eax no inicio do segmento
 	movl $DISP, POS_AVAL(%eax) # e coloca esse segmento como disponivel
