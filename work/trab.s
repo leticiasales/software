@@ -1,13 +1,10 @@
 .section .data
-	#Vari�veis globais
 	inicio_heap: .long 0
 	tam_anterior: .long 0
 	brk_atual: .long 0
 
-	#Constantes
-	.equ HDR_TAM, 12 # Tamanho do cabe�alho, para meuAlocaMemr uma posicao a mais  a do tam anterior, e somar com tam
+	.equ HDR_TAM, 12
 	.equ BRK, 45
-	.equ LINUX_SYSCALL, 0x80
 	.equ DISP, 1
 	.equ INDISP, 0
 	.equ POS_AVAL, 0 # Posicao de DISP ou INDISP no cabe�alho
@@ -26,7 +23,7 @@ meuAlocaMem:
 	jne end_if #Ir� verificar o tamanho da heap
 	movl $BRK, %eax
 	movl $0, %ebx
-	int $LINUX_SYSCALL
+	int $0x80
 
 	incl %eax #incrementa em 1 o valor da brk, para pegar o primeiro endere�o v�lido
 	movl %eax, brk_atual
@@ -68,7 +65,7 @@ aumenta_brk:
 	pushl %ecx
 
 	movl $BRK, %eax
-	int $LINUX_SYSCALL
+	int $0x80
 
 	cmpl $0, %eax # Vericia se foi possivel aumentar a brk
 	je erro
@@ -279,7 +276,7 @@ diminui_brk:
 
 	movl %eax, %ebx
 	movl $BRK, %eax
-	int $LINUX_SYSCALL
+	int $0x80
 	movl %eax, brk_atual
 
 fim:
