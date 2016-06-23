@@ -1,7 +1,16 @@
 .section .data
-	inicio_heap: .long 0
+	heap_begin: .long 0
 	tam_anterior: .long 0
 	brk_atual: .long 0
+
+	velha: .ascii  "#\n"
+	velha_length: .quad   . - velha
+
+	mais: .ascii  "+\n"
+	mais_length: .quad   . - mais
+
+	risco: .ascii  "-\n"
+	risco_length: .quad   . - risco
 
 	.equ sz_header, 12
 	.equ break, 45
@@ -19,7 +28,7 @@ meuAlocaMem:
 	pushl %ebp
 	movl %esp, %ebp
 
-	cmpl $0,inicio_heap
+	cmpl $0,heap_begin
 	jne end_if
 	movl $break, %eax
 	movl $0, %ebx
@@ -27,10 +36,10 @@ meuAlocaMem:
 
 	incl %eax #incrementa em 1 o valor da break, para pegar o primeiro endere�o v�lido
 	movl %eax, brk_atual
-	movl %eax, inicio_heap
+	movl %eax, heap_begin
 
 end_if:
-	movl inicio_heap, %eax #Carrega as vari�veis globais
+	movl heap_begin, %eax #Carrega as vari�veis globais
 	movl brk_atual, %ebx #tamanho a ser meuAlocaMemdo em registradores
 	movl 8(%ebp), %ecx #tamanho do malloc
 
@@ -146,12 +155,12 @@ imprMapa2:
 	movl $0, TOTAL_SEG_LIVRES(%ebp)
 	movl $1, INC(%ebp)
 
-	pushl inicio_heap # Parametros para impressao do endere�o do inicio da heap
+	pushl heap_begin # Parametros para impressao do endere�o do inicio da heap
 	pushl $msg1 # e a mensagem
 	call printf
 	addl $8, %esp # Restaura a pilha
 
-	movl inicio_heap, %eax
+	movl heap_begin, %eax
 
 loop_seg:
 
@@ -286,58 +295,58 @@ fim:
 	.type imprMapa, @function              #<-Important
 
 	imprMapa:
-	  	movq heap_begin, %eax
+	  	movl heap_begin, %eax
 
 	print2:
-		cmpq $UNAVAILABLE, HDR_AVAIL_OFFSET(%eax)
+		cmpl $false, bit_avaliable(%eax)
 		je next_location2
 		jmp next_location3
 		ret
 
 	next_location2:
-			addq $8, %eax #The total size of the memory
-				movq %eax,tes
+			addl $8, %eax #The total size of the memory
+				movl %eax,tes
 
-				movq	%eax, %edx
-			    movq     $1,%eax               # Move 1(write) into eax
-			    movq     $1,%edi               # Move 1(fd stdOut) into edi.
-		    	movq     $risco,%rsi            # Move the _location_ of the string into rsi
-			    movq     risco_length,%rdx             # Move the _length_ of the string into rdx
+				movl	%eax, %edx
+			    movl     $1,%eax               # Move 1(write) into eax
+			    movl     $1,%edi               # Move 1(fd stdOut) into edi.
+		    	movl     $risco,%esi            # Move the _location_ of the string into esi
+			    movl     risco_length,%edx             # Move the _length_ of the string into edx
 			    syscall                         # Call the kernel
-		   		movq %edx,%eax
+		   		movl %edx,%eax
 
-		    addq (%eax),%eax
-			addq $8,%eax
+		    addl (%eax),%eax
+			addl $8,%eax
 
 
-	#		addq $8,%eax
-			movq HDR_AVAIL_OFFSET(%eax),%ecx
-			movq %ecx,tes2
+	#		addl $8,%eax
+			movl bit_avaliable(%eax),%ecx
+			movl %ecx,tes2
 
-			cmpq %eax, current_break
+			cmpl %eax, current_break
 			jne print2
 	  	ret
 
 	  next_location3:
-				addq $8, %eax #The total size of the memory
-				movq %eax,tes
+				addl $8, %eax #The total size of the memory
+				movl %eax,tes
 
-				movq	%eax, %edx
-			    movq     $1,%eax               # Move 1(write) into eax
-			    movq     $1,%edi               # Move 1(fd stdOut) into edi.
-		    	movq     $mais,%rsi            # Move the _location_ of the string into rsi
-			    movq     mais_length,%rdx             # Move the _length_ of the string into rdx
+				movl	%eax, %edx
+			    movl     $1,%eax               # Move 1(write) into eax
+			    movl     $1,%edi               # Move 1(fd stdOut) into edi.
+		    	movl     $mais,%esi            # Move the _location_ of the string into esi
+			    movl     mais_length,%edx             # Move the _length_ of the string into edx
 			    syscall                         # Call the kernel
-		   		movq %edx,%eax
+		   		movl %edx,%eax
 
-		    addq (%eax),%eax
-			addq $8,%eax
+		    addl (%eax),%eax
+			addl $8,%eax
 
 
-	#		addq $8,%eax
-			movq HDR_AVAIL_OFFSET(%eax),%ecx
-			movq %ecx,tes2
+	#		addl $8,%eax
+			movl bit_avaliable(%eax),%ecx
+			movl %ecx,tes2
 
-			cmpq %eax, current_break
+			cmpl %eax, current_break
 			jne print2
 	ret
