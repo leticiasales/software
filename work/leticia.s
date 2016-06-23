@@ -286,58 +286,58 @@ fim:
 	.type imprMapa, @function              #<-Important
 
 	imprMapa:
-	  	movq heap_begin, %rax
+	  	movq heap_begin, %eax
 
 	print2:
-		cmpq $UNAVAILABLE, HDR_AVAIL_OFFSET(%rax)
+		cmpq $UNAVAILABLE, HDR_AVAIL_OFFSET(%eax)
 		je next_location2
 		jmp next_location3
 		ret
 
 	next_location2:
-			addq $8, %rax #The total size of the memory
-				movq %rax,tes
+			addq $8, %eax #The total size of the memory
+				movq %eax,tes
 
-				movq	%rax, %r10
-			    movq     $1,%rax               # Move 1(write) into rax
-			    movq     $1,%rdi               # Move 1(fd stdOut) into rdi.
+				movq	%eax, %edx
+			    movq     $1,%eax               # Move 1(write) into eax
+			    movq     $1,%edi               # Move 1(fd stdOut) into edi.
 		    	movq     $risco,%rsi            # Move the _location_ of the string into rsi
 			    movq     risco_length,%rdx             # Move the _length_ of the string into rdx
 			    syscall                         # Call the kernel
-		   		movq %r10,%rax
+		   		movq %edx,%eax
 
-		    addq (%rax),%rax
-			addq $8,%rax
+		    addq (%eax),%eax
+			addq $8,%eax
 
 
-	#		addq $8,%rax
-			movq HDR_AVAIL_OFFSET(%rax),%r9
-			movq %r9,tes2
+	#		addq $8,%eax
+			movq HDR_AVAIL_OFFSET(%eax),%ecx
+			movq %ecx,tes2
 
-			cmpq %rax, current_break
+			cmpq %eax, current_break
 			jne print2
 	  	ret
 
 	  next_location3:
-				addq $8, %rax #The total size of the memory
-				movq %rax,tes
+				addq $8, %eax #The total size of the memory
+				movq %eax,tes
 
-				movq	%rax, %r10
-			    movq     $1,%rax               # Move 1(write) into rax
-			    movq     $1,%rdi               # Move 1(fd stdOut) into rdi.
+				movq	%eax, %edx
+			    movq     $1,%eax               # Move 1(write) into eax
+			    movq     $1,%edi               # Move 1(fd stdOut) into edi.
 		    	movq     $mais,%rsi            # Move the _location_ of the string into rsi
 			    movq     mais_length,%rdx             # Move the _length_ of the string into rdx
 			    syscall                         # Call the kernel
-		   		movq %r10,%rax
+		   		movq %edx,%eax
 
-		    addq (%rax),%rax
-			addq $8,%rax
+		    addq (%eax),%eax
+			addq $8,%eax
 
 
-	#		addq $8,%rax
-			movq HDR_AVAIL_OFFSET(%rax),%r9
-			movq %r9,tes2
+	#		addq $8,%eax
+			movq HDR_AVAIL_OFFSET(%eax),%ecx
+			movq %ecx,tes2
 
-			cmpq %rax, current_break
+			cmpq %eax, current_break
 			jne print2
 	ret
