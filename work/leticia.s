@@ -285,7 +285,7 @@ fim:
   msg_1: .string "Segmento %d\n"
   msg_2: .string "#"
   msg_3: .string "\n"
-  msg_4: .string "*"
+  msg_4: .string "+"
   msg_5: .string "-"
 
 imprMapa:
