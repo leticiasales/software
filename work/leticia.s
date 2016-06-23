@@ -1,13 +1,22 @@
 .section .data
-	inicio_heap: .long 0
+	heap_begin: .long 0
 	tam_anterior: .long 0
-	brk_atual: .long 0
+	current_break: .long 0
+
+	velha: .ascii  "#\n"
+	velha_length: .quad   . - velha
+
+	mais: .ascii  "+\n"
+	mais_length: .quad   . - mais
+
+	risco: .ascii  "-\n"
+	risco_length: .quad   . - risco
 
 	.equ sz_header, 12
 	.equ break, 45
 	.equ true, 1
 	.equ false, 0
-	.equ bit_available, 0 # Posicao de true ou false no cabe�alho
+	.equ heap_begin, 0 # Posicao de true ou false no cabe�alho
 	.equ bit_size, 4 # Posicao do tamanho no cabe�alho
 	.equ sz_prev, 8
 
@@ -19,19 +28,19 @@ meuAlocaMem:
 	pushl %ebp
 	movl %esp, %ebp
 
-	cmpl $0,inicio_heap
+	cmpl $0,heap_begin
 	jne end_if
 	movl $break, %eax
 	movl $0, %ebx
 	int $0x80
 
 	incl %eax #incrementa em 1 o valor da break, para pegar o primeiro endere�o v�lido
-	movl %eax, brk_atual
-	movl %eax, inicio_heap
+	movl %eax, current_break
+	movl %eax, heap_begin
 
 end_if:
-	movl inicio_heap, %eax #Carrega as vari�veis globais
-	movl brk_atual, %ebx #tamanho a ser meuAlocaMemdo em registradores
+	movl heap_begin, %eax #Carrega as vari�veis globais
+	movl current_break, %ebx #tamanho a ser meuAlocaMemdo em registradores
 	movl 8(%ebp), %ecx #tamanho do malloc
 
 procura_espaco:
@@ -39,7 +48,7 @@ procura_espaco:
 	je aumenta_brk #igual a break, aumentamos a break
 
 	movl bit_size(%eax), %edx #edx recebe o tamanho do segmento atual
-	cmpl $false, bit_available(%eax) # Se o segmento estiver ocupado
+	cmpl $false, heap_begin(%eax) # Se o segmento estiver ocupado
 	je prox_segmento # desvia para o proximo segmento
 
 	cmpl %edx, %ecx # Se o segmento � do mesmo tamanho que precisamos meuAlocaMemr
@@ -74,20 +83,20 @@ aumenta_brk:
 	popl %ebx # tamanho malloc + cabe�alho
 	popl %eax # inicio heap
 
-	movl $false, bit_available(%eax) # Define o status como indisponivel
+	movl $false, heap_begin(%eax) # Define o status como indisponivel
 	movl %ecx, bit_size(%eax) # e informa o tamanho do segmento
 
 	movl tam_anterior, %ecx
 	movl %ecx, sz_prev(%eax)
 
 	addl $sz_header, %eax  # *esconder tam do cabe�alho para imprimir somente o meuAlocaMemdo
-	movl %ebx, brk_atual # Novo valor break
+	movl %ebx, current_break # Novo valor break
 	popl %ebp
 	ret
 
 meuAlocaMem_igual:
 
-	movl $false, bit_available(%eax) # Se o segmento tem o mesmo tamanho do que
+	movl $false, heap_begin(%eax) # Se o segmento tem o mesmo tamanho do que
 	addl $sz_header, %eax # queremos meuAlocaMemr, definimos o status como
 	popl %ebp # indisponivel
 	ret
@@ -97,7 +106,7 @@ meuAlocaMem_menor:
 	subl $sz_header, %edx # Verifica se o segmento tem pelo menos o
 	cmpl %ecx, %edx # tamanho que queremos meuAlocaMemr somado em *
 	jle prox_segmento # (8 do cabecalho e 1 do espaco novo), que � o minimo necessario para outro segmento
-	movl $false, bit_available(%eax)
+	movl $false, heap_begin(%eax)
 	movl %ecx, bit_size(%eax)
 
 	addl %ecx, %eax # Segue para o peda�o livre que sobrou do segmento
@@ -105,7 +114,7 @@ meuAlocaMem_menor:
 
 	subl %ecx, %edx
 	movl %edx, bit_size(%eax) # Define o tamanho que restou do segmento
-	movl $true, bit_available(%eax) # e o status como disponivel
+	movl $true, heap_begin(%eax) # e o status como disponivel
 
 	subl %ecx, %eax # Volta para o segmento anterior
 	popl %ebp # na primeira posicao apos o cabecalho
@@ -146,21 +155,21 @@ imprMapa2:
 	movl $0, TOTAL_SEG_LIVRES(%ebp)
 	movl $1, INC(%ebp)
 
-	pushl inicio_heap # Parametros para impressao do endere�o do inicio da heap
+	pushl heap_begin # Parametros para impressao do endere�o do inicio da heap
 	pushl $msg1 # e a mensagem
 	call printf
 	addl $8, %esp # Restaura a pilha
 
-	movl inicio_heap, %eax
+	movl heap_begin, %eax
 
 loop_seg:
 
-	cmpl brk_atual, %eax
+	cmpl current_break, %eax
 	je fim_loop
 
 if_ocupado:
 
-	cmpl $false, bit_available(%eax) # Verifica se o segmento esta ocupado
+	cmpl $false, heap_begin(%eax) # Verifica se o segmento esta ocupado
 	jne else_livre # Se estiver livre vai para o else_livre
 	addl $1, TOTAL_OCUPADOS(%ebp) # Incrementa TOTAL_OCUPADOS
 	movl bit_size(%eax), %ebx
@@ -225,17 +234,17 @@ fim_loop:
 meuLiberaMem:
 	movl LIBERA(%esp), %eax # Acessa parametro
 	subl $sz_header, %eax # posiciona eax no inicio do segmento
-	movl $true, bit_available(%eax) # e coloca esse segmento como disponivel
+	movl $true, heap_begin(%eax) # e coloca esse segmento como disponivel
 	movl bit_size(%eax), %ecx
 
 	movl %eax, %ebx
 	addl %ecx, %ebx
 	addl $sz_header, %ebx
 
-	cmpl brk_atual, %ebx
+	cmpl current_break, %ebx
 	jge parte_1
 
-	cmpl $true, bit_available(%ebx)
+	cmpl $true, heap_begin(%ebx)
 	jne parte_1
 
 	movl bit_size(%eax), %ecx # ecx tera o tam do segmento atual
@@ -253,7 +262,7 @@ parte_1:
 	subl sz_prev(%eax), %ebx
 	subl $sz_header, %ebx
 
-	cmpl $true, bit_available(%ebx)
+	cmpl $true, heap_begin(%ebx)
 	jne parte_2
 
 	movl bit_size(%eax), %ecx
@@ -269,7 +278,7 @@ parte_2:
 	addl $sz_header, %ebx
 	addl bit_size(%eax), %ebx
 
-	cmpl brk_atual, %ebx
+	cmpl current_break, %ebx
 	jl fim
 
 diminui_brk:
@@ -277,7 +286,7 @@ diminui_brk:
 	movl %eax, %ebx
 	movl $break, %eax
 	int $0x80
-	movl %eax, brk_atual
+	movl %eax, current_break
 
 fim:
 	ret
@@ -286,58 +295,58 @@ fim:
 	.type imprMapa, @function              #<-Important
 
 	imprMapa:
-	  	movq heap_begin, %eax
+	  	movl heap_begin, %eax
 
 	print2:
-		cmpq $UNAVAILABLE, HDR_AVAIL_OFFSET(%eax)
+		cmpl $false, bit_avaiable(%eax)
 		je next_location2
 		jmp next_location3
 		ret
 
 	next_location2:
-			addq $8, %eax #The total size of the memory
-				movq %eax,tes
+			addl $8, %eax #The total size of the memory
+				movl %eax,tes
 
-				movq	%eax, %edx
-			    movq     $1,%eax               # Move 1(write) into eax
-			    movq     $1,%edi               # Move 1(fd stdOut) into edi.
-		    	movq     $risco,%rsi            # Move the _location_ of the string into rsi
-			    movq     risco_length,%rdx             # Move the _length_ of the string into rdx
+				movl	%eax, %edx
+			    movl     $1,%eax               # Move 1(write) into eax
+			    movl     $1,%edi               # Move 1(fd stdOut) into edi.
+		    	movl     $risco,%rsi            # Move the _location_ of the string into rsi
+			    movl     risco_length,%rdx             # Move the _length_ of the string into rdx
 			    syscall                         # Call the kernel
-		   		movq %edx,%eax
+		   		movl %edx,%eax
 
-		    addq (%eax),%eax
-			addq $8,%eax
+		    addl (%eax),%eax
+			addl $8,%eax
 
 
-	#		addq $8,%eax
-			movq HDR_AVAIL_OFFSET(%eax),%ecx
-			movq %ecx,tes2
+	#		addl $8,%eax
+			movl bit_avaiable(%eax),%ecx
+			movl %ecx,tes2
 
-			cmpq %eax, current_break
+			cmpl %eax, current_break
 			jne print2
 	  	ret
 
 	  next_location3:
-				addq $8, %eax #The total size of the memory
-				movq %eax,tes
+				addl $8, %eax #The total size of the memory
+				movl %eax,tes
 
-				movq	%eax, %edx
-			    movq     $1,%eax               # Move 1(write) into eax
-			    movq     $1,%edi               # Move 1(fd stdOut) into edi.
-		    	movq     $mais,%rsi            # Move the _location_ of the string into rsi
-			    movq     mais_length,%rdx             # Move the _length_ of the string into rdx
+				movl	%eax, %edx
+			    movl     $1,%eax               # Move 1(write) into eax
+			    movl     $1,%edi               # Move 1(fd stdOut) into edi.
+		    	movl     $mais,%rsi            # Move the _location_ of the string into rsi
+			    movl     mais_length,%rdx             # Move the _length_ of the string into rdx
 			    syscall                         # Call the kernel
-		   		movq %edx,%eax
+		   		movl %edx,%eax
 
-		    addq (%eax),%eax
-			addq $8,%eax
+		    addl (%eax),%eax
+			addl $8,%eax
 
 
-	#		addq $8,%eax
-			movq HDR_AVAIL_OFFSET(%eax),%ecx
-			movq %ecx,tes2
+	#		addl $8,%eax
+			movl bit_avaiable(%eax),%ecx
+			movl %ecx,tes2
 
-			cmpq %eax, current_break
+			cmpl %eax, current_break
 			jne print2
 	ret
