@@ -2,6 +2,8 @@
 	heap_begin: .long 0
 	tam_anterior: .long 0
 	current_break: .long 0
+	tes: .long 0
+	tes2: .long 0
 
 	velha: .ascii  "#\n"
 	velha_length: .quad   . - velha
