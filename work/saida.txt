@@ -1,0 +1,83 @@
+
+Inicio bss: 0x93e1001
+Segmento 1: 100 bytes ocupados
+Segmentos Ocupados: 1 / 100 bytes
+Segmentos Livres: 0 / 0 bytes
+
+
+Inicio bss: 0x93e1001
+Segmento 1: 100 bytes ocupados
+Segmento 2: 200 bytes ocupados
+Segmentos Ocupados: 2 / 300 bytes
+Segmentos Livres: 0 / 0 bytes
+
+
+Inicio bss: 0x93e1001
+Segmento 1: 100 bytes ocupados
+Segmento 2: 200 bytes ocupados
+Segmento 3: 300 bytes ocupados
+Segmentos Ocupados: 3 / 600 bytes
+Segmentos Livres: 0 / 0 bytes
+
+
+Inicio bss: 0x93e1001
+Segmento 1: 100 bytes ocupados
+Segmento 2: 200 bytes ocupados
+Segmento 3: 300 bytes ocupados
+Segmento 4: 400 bytes ocupados
+Segmentos Ocupados: 4 / 1000 bytes
+Segmentos Livres: 0 / 0 bytes
+
+
+Inicio bss: 0x93e1001
+Segmento 1: 100 bytes ocupados
+Segmento 2: 200 bytes livres
+Segmento 3: 300 bytes ocupados
+Segmento 4: 400 bytes ocupados
+Segmentos Ocupados: 3 / 800 bytes
+Segmentos Livres: 1 / 200 bytes
+
+
+Inicio bss: 0x93e1001
+Segmento 1: 100 bytes ocupados
+Segmento 2: 50 bytes ocupados
+Segmento 3: 138 bytes livres
+Segmento 4: 300 bytes ocupados
+Segmento 5: 400 bytes ocupados
+Segmentos Ocupados: 4 / 850 bytes
+Segmentos Livres: 1 / 138 bytes
+
+
+Inicio bss: 0x93e1001
+Segmento 1: 100 bytes ocupados
+Segmento 2: 50 bytes ocupados
+Segmento 3: 138 bytes livres
+Segmento 4: 300 bytes livres
+Segmento 5: 400 bytes ocupados
+Segmentos Ocupados: 3 / 550 bytes
+Segmentos Livres: 2 / 438 bytes
+
+
+Inicio bss: 0x93e1001
+Segmento 1: 100 bytes livres
+Segmento 2: 50 bytes ocupados
+Segmento 3: 138 bytes livres
+Segmento 4: 300 bytes livres
+Segmento 5: 400 bytes ocupados
+Segmentos Ocupados: 2 / 450 bytes
+Segmentos Livres: 3 / 538 bytes
+
+
+Inicio bss: 0x93e1001
+Segmento 1: 312 bytes livres
+Segmento 2: 300 bytes livres
+Segmento 3: 400 bytes ocupados
+Segmentos Ocupados: 1 / 400 bytes
+Segmentos Livres: 2 / 612 bytes
+
+
+Inicio bss: 0x93e1001
+Segmento 1: 312 bytes livres
+Segmentos Ocupados: 0 / 0 bytes
+Segmentos Livres: 1 / 312 bytes
+
