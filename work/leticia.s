@@ -314,7 +314,7 @@ fim:
 			    movl     $1,%edi               # Move 1(fd stdOut) into edi.
 		    	movl     $risco,%esi            # Move the _location_ of the string into esi
 			    movl     risco_length,%edx             # Move the _length_ of the string into edx
-			    syscall                         # Call the kernel
+			    call printf                         # Call the kernel
 		   		movl %edx,%eax
 
 		    addl (%eax),%eax
