@@ -384,4 +384,3 @@ fim_mapa:
     addl $8, %esp
     popl %ebp
     ret
-

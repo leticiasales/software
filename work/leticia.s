@@ -27,6 +27,7 @@ meuAlocaMem:
 	incl %eax #incrementa em 1 o valor da break, para pegar o primeiro endere�o v�lido
 	movl %eax, curr_break
 	movl %eax, heap_begin
+	int $0x80
 
 end_if:
 	movl heap_begin, %eax #Carrega as vari�veis globais
@@ -67,6 +68,7 @@ aumenta_break:
 
 	cmpl $0, %eax # Vericia se foi possivel aumentar a break
 	je erro
+	int $0x80
 
 	popl %ecx # tamanho do malloc
 	popl %ebx # tamanho malloc + cabe�alho
@@ -273,7 +275,7 @@ diminui_break:
 
 	movl %eax, %ebx
 	movl $break, %eax
-	int $60
+	int $0x80
 	movl %eax, curr_break
 
 fim:
