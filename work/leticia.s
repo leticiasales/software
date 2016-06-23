@@ -1,7 +1,7 @@
 .section .data
 	heap_begin: .long 0
 	tam_anterior: .long 0
-	brk_atual: .long 0
+	current_break: .long 0
 
 	velha: .ascii  "#\n"
 	velha_length: .quad   . - velha
@@ -35,12 +35,12 @@ meuAlocaMem:
 	int $0x80
 
 	incl %eax #incrementa em 1 o valor da break, para pegar o primeiro endere�o v�lido
-	movl %eax, brk_atual
+	movl %eax, current_break
 	movl %eax, heap_begin
 
 end_if:
 	movl heap_begin, %eax #Carrega as vari�veis globais
-	movl brk_atual, %ebx #tamanho a ser meuAlocaMemdo em registradores
+	movl current_break, %ebx #tamanho a ser meuAlocaMemdo em registradores
 	movl 8(%ebp), %ecx #tamanho do malloc
 
 procura_espaco:
@@ -90,7 +90,7 @@ aumenta_brk:
 	movl %ecx, sz_prev(%eax)
 
 	addl $sz_header, %eax  # *esconder tam do cabe�alho para imprimir somente o meuAlocaMemdo
-	movl %ebx, brk_atual # Novo valor break
+	movl %ebx, current_break # Novo valor break
 	popl %ebp
 	ret
 
@@ -164,7 +164,7 @@ imprMapa2:
 
 loop_seg:
 
-	cmpl brk_atual, %eax
+	cmpl current_break, %eax
 	je fim_loop
 
 if_ocupado:
@@ -241,7 +241,7 @@ meuLiberaMem:
 	addl %ecx, %ebx
 	addl $sz_header, %ebx
 
-	cmpl brk_atual, %ebx
+	cmpl current_break, %ebx
 	jge parte_1
 
 	cmpl $true, bit_available(%ebx)
@@ -278,7 +278,7 @@ parte_2:
 	addl $sz_header, %ebx
 	addl bit_size(%eax), %ebx
 
-	cmpl brk_atual, %ebx
+	cmpl current_break, %ebx
 	jl fim
 
 diminui_brk:
@@ -286,7 +286,7 @@ diminui_brk:
 	movl %eax, %ebx
 	movl $break, %eax
 	int $0x80
-	movl %eax, brk_atual
+	movl %eax, current_break
 
 fim:
 	ret
@@ -298,7 +298,7 @@ fim:
 	  	movl heap_begin, %eax
 
 	print2:
-		cmpl $false, bit_avaliable(%eax)
+		cmpl $false, bit_available(%eax)
 		je next_location2
 		jmp next_location3
 		ret
@@ -320,7 +320,7 @@ fim:
 
 
 	#		addl $8,%eax
-			movl bit_avaliable(%eax),%ecx
+			movl bit_available(%eax),%ecx
 			movl %ecx,tes2
 
 			cmpl %eax, current_break
@@ -344,7 +344,7 @@ fim:
 
 
 	#		addl $8,%eax
-			movl bit_avaliable(%eax),%ecx
+			movl bit_available(%eax),%ecx
 			movl %ecx,tes2
 
 			cmpl %eax, current_break
