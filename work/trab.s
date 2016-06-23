@@ -121,8 +121,8 @@ erro:
 
 
 # imprime o mapa
-.globl imprMapa
-.type imprMapa, @function
+.globl imprMapa2
+.type imprMapa2, @function
 
 	msg1: .string "\nInicio bss: %p\n"
 	msg2: .string "Segmento %d: %d bytes ocupados\n"
@@ -137,7 +137,7 @@ erro:
 	.equ TOTAL_SEG_LIVRES, -20
 	.equ INC, -24 # N�mero segmento atual
 
-imprMapa:
+imprMapa2:
 	pushl %ebp
 	movl %esp, %ebp
 
@@ -285,8 +285,8 @@ diminui_brk:
 fim:
 	ret
 
-.globl imprMapa2
-.type imprMapa2, @function
+.globl imprMapa
+.type imprMapa, @function
 
   msg_1: .string "Segmento %d\n"
   msg_2: .string "#"
@@ -294,7 +294,7 @@ fim:
   msg_4: .string "*"
   msg_5: .string "-"
 
-imprMapa2:
+imprMapa:
     pushl %ebp
     movl %esp, %ebp
     subl $8, %esp
